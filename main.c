@@ -29,15 +29,15 @@ int main(void)
     //调用初始化函数，传入参数为GPIO初始化结构体的地址
     GPIO_Init(GPIOA, &GPIO_InitStruct);    
     //使能1
-	   GPIO_SetBits(GPIOA, GPIO_Pin_0);     
+	  // GPIO_SetBits(GPIOA, GPIO_Pin_0);     
     while(1){        
         //GPIO管脚置位函数，第一个参数为那个GPIO口，第二个为GPIO口的第几个引脚
         GPIO_SetBits(GPIOA, GPIO_Pin_1);  
 				GPIO_SetBits(GPIOA, GPIO_Pin_2);        
-			 // delay_nms(100);
+			  delay_nms(100);
         //GPIO管脚复位函数，第一个参数为那个GPIO口，第二个为GPIO口的第几个引脚
         GPIO_ResetBits(GPIOA, GPIO_Pin_1);
 			  GPIO_ResetBits(GPIOA, GPIO_Pin_2);
-			 // delay_nms(100);
+			  delay_nms(100);
     }
 }
