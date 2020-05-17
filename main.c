@@ -29,19 +29,19 @@ int main(void)
     //调用初始化函数，传入参数为GPIO初始化结构体的地址
     GPIO_Init(GPIOA, &GPIO_InitStruct);    
     //使能1
-	  //GPIO_SetBits(GPIOA, GPIO_Pin_0);  
+	  GPIO_SetBits(GPIOA, GPIO_Pin_0);  
 		//使不能1
-	  GPIO_ResetBits(GPIOA, GPIO_Pin_0);
+	  //GPIO_ResetBits(GPIOA, GPIO_Pin_0);
 	  //方向控制
-		GPIO_SetBits(GPIOA, GPIO_Pin_2); 	
+		GPIO_SetBits(GPIOA, GPIO_Pin_1); 	
 		//GPIO_ResetBits(GPIOA, GPIO_Pin_2);
 		//控制速度
 	  unsigned long delayLms=300;
     while(1){        
        //控制速度
-        GPIO_SetBits(GPIOA, GPIO_Pin_1);  				       
+        GPIO_SetBits(GPIOA, GPIO_Pin_2);  				       
 			  delay_nms(delayLms);
-        GPIO_ResetBits(GPIOA, GPIO_Pin_1);			  
+        GPIO_ResetBits(GPIOA, GPIO_Pin_2);			  
 			  delay_nms(delayLms);
     }
 }
