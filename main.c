@@ -33,16 +33,17 @@ int main(void)
 		//使不能1
 	  //GPIO_ResetBits(GPIOA, GPIO_Pin_0);
 	  //方向控制
-		GPIO_ResetBits(GPIOA, GPIO_Pin_1);  
-		GPIO_SetBits(GPIOA, GPIO_Pin_2); 	
+		//GPIO_SetBits(GPIOA, GPIO_Pin_2); 	
 		//GPIO_ResetBits(GPIOA, GPIO_Pin_2);
 		//控制速度
-	 // unsigned long delayLms=300;
+	  unsigned long delayLms=50;
     while(1){        
        //控制速度
-       // GPIO_SetBits(GPIOA, GPIO_Pin_1);  				       
-			 // delay_nms(delayLms);
-       // GPIO_ResetBits(GPIOA, GPIO_Pin_1);			  
-			 // delay_nms(delayLms);
+        GPIO_SetBits(GPIOA, GPIO_Pin_1);  
+				GPIO_ResetBits(GPIOA, GPIO_Pin_2);			  			
+			  delay_nms(delayLms);
+			  GPIO_ResetBits(GPIOA, GPIO_Pin_1);	
+				GPIO_SetBits(GPIOA, GPIO_Pin_2);        		  
+			  delay_nms(delayLms);
     }
 }
