@@ -36,7 +36,7 @@ int main(void)
 		//GPIO_SetBits(GPIOA, GPIO_Pin_2); 	
 		//GPIO_ResetBits(GPIOA, GPIO_Pin_2);
 		//控制速度
-	  unsigned long delayLms=50;
+	  unsigned long delayLms=300;
     while(1){        
        //控制速度
         GPIO_SetBits(GPIOA, GPIO_Pin_1);  
