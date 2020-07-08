@@ -1,11 +1,21 @@
-#include "stm32f10x.h"
-#include "stdio.h"
+/*===============================================================================
+Copyright:
+Version:
+Author:
+Date: 2017/11/3
+Description:
+    配置独立看门狗初始化函数，在主函数中运行IWDG_ReloadCounter进行喂狗主函数必须在4s内进行一次喂狗不然系统会复位；
+    函数功能是将接收固定长度的字符串，并将接收后的字符串通过串口发送出去
+revise Description:
+===============================================================================*/
 #include "stm32f10x_usart.h"
 #include "stm32f10x.h"
 #include "stm32f10x_iwdg.h"
 
-u8 USART1_RX_BUF[1];
+u8 USART1_RX_BUF[21];
 u8 USART1_RX_CNT=0;
+
+void IWDG_Configuration(void);
 
 void Usart1_Init(u32 bound)
 {
@@ -14,7 +24,7 @@ void Usart1_Init(u32 bound)
     USART_InitTypeDef USART_InitStructure;
     NVIC_InitTypeDef NVIC_InitStructure;
 
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1|RCC_APB2Periph_GPIOA, ENABLE);//使能USART1,GPIOA,C时钟
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1|RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOC, ENABLE);//使能USART1,GPIOA,C时钟
 
     //USART1_TX   GPIOA.9
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9; //PA.9
@@ -24,7 +34,7 @@ void Usart1_Init(u32 bound)
 
     //USART1_RX      GPIOA.10初始化
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;//PA10
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;//浮空输入
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;//浮空输入
     GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIOA.10
 
     //Usart1 NVIC 配置
@@ -57,7 +67,7 @@ void Usart1_Init(u32 bound)
 void USART1_Send_Data(u8 *buf,u16 len)
 {
     u16 t;
-    GPIO_SetBits(GPIOA,GPIO_Pin_9);
+    GPIO_SetBits(GPIOC,GPIO_Pin_9);
 //  RS485_TX_EN=1;            //设置为发送模式
     for(t=0;t<len;t++)        //循环发送数据
     {
@@ -65,10 +75,25 @@ void USART1_Send_Data(u8 *buf,u16 len)
         USART_SendData(USART1,buf[t]);
     }
     while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
-    GPIO_ResetBits(GPIOA,GPIO_Pin_9);
+    GPIO_ResetBits(GPIOC,GPIO_Pin_9);
 //    RS485_TX_EN=0;                //设置为接收模式
 }
+int main(void)
+{
+    Usart1_Init(9600);//串口1波特率设置为9600
+    IWDG_Configuration();
+    while(1)
+    {
+        IWDG_ReloadCounter();//4s内必须喂狗不然复位
+        if(USART1_RX_CNT==21)//数据接收完成
+        {
+            USART1_RX_CNT=0;//指针复位
+            //将接收到的数据发送出去
+            USART1_Send_Data(USART1_RX_BUF,21);//通过串口1将接收到的固定长度字符发送出去
+        }
+    }
 
+}
 /**
 * 接收指定长度的字符串
 * 比如接收固定大小为21个字节的字符串
@@ -79,7 +104,7 @@ void USART1_IRQHandler(void)                    //串口1中断服务程序
     if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
         {
             Res =USART_ReceiveData(USART1);    //读取接收到的数据
-            if(USART1_RX_CNT<1)//对于接收指定长度的字符串
+            if(USART1_RX_CNT<21)//对于接收指定长度的字符串
             {
                 USART1_RX_BUF[USART1_RX_CNT]=Res;        //记录接收到的值
                 USART1_RX_CNT++;                                        //接收数据增加1
@@ -93,18 +118,23 @@ void USART1_IRQHandler(void)                    //串口1中断服务程序
     }
      USART_ClearFlag(USART1,USART_IT_RXNE); //一定要清除接收中断
 }
-int main(void)
+/*===============================================================================
+Copyright:
+Version:
+Author:
+Date: 2017/11/3
+Description:配置独立看门狗初始化函数，在主函数中运行IWDG_ReloadCounter进行喂狗
+    主函数必须在4s内进行一次喂狗不然系统会复位
+revise Description:
+===============================================================================*/
+void IWDG_Configuration(void)
 {
-    Usart1_Init(9600);//串口1波特率设置为9600  
-    while(1)
-    {       
-        if(USART1_RX_CNT==1)//数据接收完成
-        {
-            USART1_RX_CNT=0;//指针复位
-            //将接收到的数据发送出去
-						USART1_RX_BUF[0]='3';
-            USART1_Send_Data(USART1_RX_BUF,1);//通过串口1将接收到的固定长度字符发送出去
-        }
-    }
-
+     /* 写入0x5555,用于允许狗狗寄存器写入功能 */
+    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+     /* 狗狗时钟分频,40K/256=156HZ(6.4ms)*/
+    IWDG_SetPrescaler(IWDG_Prescaler_256);    /* 喂狗时间 5s/6.4MS=781 .注意不能大于0xfff*/
+    IWDG_SetReload(781);//781（5s时间）
+    IWDG_SetReload(3125);//781（20s时间）
+    IWDG_Enable();//启用定时器
+    IWDG_ReloadCounter();
 }
