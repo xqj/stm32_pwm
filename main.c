@@ -57,6 +57,26 @@ void delay_ms(u16 time)
         while(i--);
     }
 }
+int Putchar(int c)                                             
+{    
+    if (c == '\n'){putchar('\r');}                                
+    USART_SendData(USART1,c);                                  
+		while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){};
+    return c;                                                       
+}   
+void UART_PutChar(USART_TypeDef* USARTx, uint8_t Data)  
+{  
+    USART_SendData(USARTx, Data);  
+    while(USART_GetFlagStatus(USARTx, USART_FLAG_TC) == RESET){}  
+}  
+void UART_PutStr (USART_TypeDef* USARTx, uint8_t *str)    
+{    
+    while (0 != *str)    
+    {    
+        UART_PutChar(USARTx, *str);    
+        str++; 		
+    }    
+}  
 char  Usart1_Data_Buffer;
 
 
@@ -80,10 +100,13 @@ int main()
     {
         if(Usart1_Data_Buffer==1) {
             GPIO_SetBits(GPIOB,GPIO_Pin_5);
+					UART_PutStr(USART1, "1"); 
         }
         if(Usart1_Data_Buffer==2) {
             GPIO_ResetBits(GPIOB,GPIO_Pin_5);
+					UART_PutStr(USART1, "2"); 
         }
+					UART_PutStr(USART1, "3");
     }
 
 }
