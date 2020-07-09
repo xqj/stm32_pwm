@@ -18,10 +18,10 @@ void delay_ms(u16 time)
 //USART2的中断
 void USART2_IRQHandler(void)
 {
-    u8 Res;
+   
     if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
     {
-        Res =USART_ReceiveData(USART2);//读取收到数据
+        Usart_Data_Buffer =USART_ReceiveData(USART2);//读取收到数据
     }
 		//溢出-发生溢出需要先读SR，再读DR寄存器则可清除不断入中断的问题
     if(USART_GetFlagStatus(USART2,USART_FLAG_ORE) == SET)
