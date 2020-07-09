@@ -15,21 +15,21 @@ void delay_ms(u16 time)
         while(i--);
     }
 }
-//USART2的中断
-void USART2_IRQHandler(void)
+//USART1的中断
+void USART1_IRQHandler(void)
 {
    
-    if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+    if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
     {
-        Usart_Data_Buffer =USART_ReceiveData(USART2);//读取收到数据
+        Usart_Data_Buffer =USART_ReceiveData(USART1);//读取收到数据
     }
 		//溢出-发生溢出需要先读SR，再读DR寄存器则可清除不断入中断的问题
-    if(USART_GetFlagStatus(USART2,USART_FLAG_ORE) == SET)
+    if(USART_GetFlagStatus(USART1,USART_FLAG_ORE) == SET)
     {
-        USART_ReceiveData(USART2);
-        USART_ClearFlag(USART2,USART_FLAG_ORE);
+        USART_ReceiveData(USART1);
+        USART_ClearFlag(USART1,USART_FLAG_ORE);
     }
-    USART_ClearFlag(USART2,USART_IT_RXNE);//清除接收中断
+    USART_ClearFlag(USART1,USART_IT_RXNE);//清除接收中断
 		count++;
 }
 /*
@@ -71,7 +71,7 @@ int main()
     NVIC_InitStrue.NVIC_IRQChannelSubPriority=1;
     //初始化配置NVIC
     NVIC_Init(&NVIC_InitStrue);
-		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+		RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
     //蓝牙
     USART_InitTypeDef USART_InitStrue;
     USART_InitStrue.USART_BaudRate=BOUND;//串口波特率
@@ -81,9 +81,9 @@ int main()
     USART_InitStrue.USART_StopBits=USART_StopBits_1;//一个停止位
     USART_InitStrue.USART_WordLength=USART_WordLength_8b;//字长为8位数据格式
 
-    USART_Init(USART2,&USART_InitStrue);//初始化串口2
-    USART_ITConfig(USART2,USART_IT_RXNE,ENABLE);//开启接收中断
-    USART_Cmd(USART2,ENABLE);//使能串口2
+    USART_Init(USART1,&USART_InitStrue);//初始化串口1
+    USART_ITConfig(USART1,USART_IT_RXNE,ENABLE);//开启接收中断
+    USART_Cmd(USART1,ENABLE);//使能串口1
 
     while(1)
     {
