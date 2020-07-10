@@ -14,7 +14,8 @@ void Usart1_Init(u32 bound)
     USART_InitTypeDef USART_InitStructure;
     NVIC_InitTypeDef NVIC_InitStructure;
 
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2|RCC_APB2Periph_GPIOA, ENABLE);//ê1?üUSART1,GPIOA,Cê±?ó
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);//使能GPIOA时钟
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2,ENABLE);//使能USART2时钟
 
     //USART1_TX   GPIOA.9
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2; //PA.9
@@ -27,7 +28,8 @@ void Usart1_Init(u32 bound)
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;//????ê?è?
     GPIO_Init(GPIOA, &GPIO_InitStructure);//3?ê??ˉGPIOA.10
 	
-	
+	 RCC_APB1PeriphResetCmd(RCC_APB1Periph_USART2,ENABLE);//复位串口2
+   RCC_APB1PeriphResetCmd(RCC_APB1Periph_USART2,DISABLE);//停止复位
 
     //Usart1 NVIC ????
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);    //éè??NVIC?D??·?×é2:2???à??ó??è??￡?2???ìó|ó??è??   0-3;
@@ -80,15 +82,10 @@ void USART2_IRQHandler(void)                    //′??ú1?D??·t??3ìDò
     u8 Res;
     if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
         {
-            Res =USART_ReceiveData(USART2);    //?áè??óê?μ?μ?êy?Y
-            if(USART1_RX_CNT<1)//??óú?óê????¨3¤?èμ?×?·?′?
-            {
-                USART1_RX_BUF[USART1_RX_CNT]=Res;        //?????óê?μ?μ??μ
-                USART1_RX_CNT++;                                        //?óê?êy?Y???ó1
-            }
+            Res =USART_ReceiveData(USART2); 
      }
          //ò?3?-è?1?·￠éúò?3?Dèòa?è?áSR,?ù?áDR??′??÷?ò?é??3y2???è??D??μ??êìa
-    if(USART_GetFlagStatus(USART2,USART_FLAG_ORE) == SET)
+    if(USART_GetFlagStatus(USART2,USART_FLAG_ORE) == SET) 
     {
         USART_ReceiveData(USART2);
         USART_ClearFlag(USART2,USART_FLAG_ORE);
@@ -97,8 +94,8 @@ void USART2_IRQHandler(void)                    //′??ú1?D??·t??3ìDò
 }
 int main(void)
 {
-    Usart1_Init(9600);//′??ú12¨ì??êéè???a9600  
-	  USART2_Send_Data(USART1_RX_BUF,7);
+    Usart2_Init(9600);//′??ú12¨ì??êéè???a9600  
+	 
     while(1)
     {       
        
